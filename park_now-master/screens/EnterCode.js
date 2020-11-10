@@ -1,23 +1,51 @@
 import React from 'react';
-import {Text,View,StyleSheet} from 'react-native';
+import { createStackNavigator } from '@react-navigation/stack';
+import {View} from 'react-native';
+import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import EnterenceQr from './EnterQr';
 
-
+const QRStack = createStackNavigator();
 const EnterQr=({navigation})=>{
     return(
-    <View  style={ styles.container }>
-        <Text>Enter Qr Page </Text>
-    </View>
-
-    );
-}
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent:"center",
-        alignItems:"center",
-        textAlign: "center",
       
-    }
+        <QRStack.Navigator
+        screenOptions ={{
+          headerStyle:{
+            backgroundColor:"#00457C",   
+            height:55,
+          },
+          
+          headerTitleAlign: 'center',
+          headerShown: true,
+          headerTintColor:"#ebf7fc",
+          headerTitleStyle:{
+          },
+          headerTitleStyle:{
+            fontSize:17,
+          //  color:"#04243d",
+            
+        },
 
-});
-export  default EnterQr;
+       }}
+     
+        
+        >
+          <QRStack.Screen name="Entereance scanning" component={EnterenceQr}   options={{
+        headerLeft: () => (
+          <View style={{marginLeft: 20}}>
+            <Icon.Button
+              name="chevron-left"
+              size={25}
+              color='#ebf7fc'
+              backgroundColor="#00457C"
+              onPress={() => navigation.goBack()}
+            />
+          </View>
+        ),}}/>
+        
+
+        </QRStack.Navigator>
+      );
+}
+
+export default EnterQr;

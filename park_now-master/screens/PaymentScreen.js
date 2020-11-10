@@ -10,11 +10,13 @@ export default class PaymentScreen extends React.Component {
         this.state = {
             text:" ",
             isValidNumber:true,
-            good_Points:false, 
+            good_Points:false,
            
          };
     }
-
+     
+   
+    
       
     validate(text){
      num=/[0-9]+$/

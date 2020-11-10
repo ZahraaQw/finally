@@ -7,8 +7,12 @@ import ReviewForm from './FormikReview';
 
 
 
-const Parking=({navigation})=>{
- 
+const Parking=({navigation,route})=>{
+    
+    let SelectTime=route.params.SelectTime;
+    let SelectDate=route.params.SelectDate;
+    let SelectDest=route.params.SelectDest;
+
    const [modalOpen, setModaleOpen] = useState(false);
    const [SlotIdTitle,setSlotId] = useState("0");
 
@@ -64,11 +68,24 @@ const Parking=({navigation})=>{
     {id: "36", isAvaliable: true},
 
   ];
+
+  const formatDate = (date) => {
+    return `${date.getDate()}/${date.getMonth() +
+      1}/${date.getFullYear()}`;
+  };
+
+  const formatTime=(time)=>{
+    return ` ${time.getHours()}:${time.getMinutes()}`;
+  };
   let Reserve=0;
   let Empty= slotinfo.length;
 
     return(
     <View style={styles.container}>
+         {
+        T= formatDate(SelectDate),
+        D= formatTime(SelectTime),
+        console.log(SelectDest,T,D)}
         < ScrollView style={styles.Boody}>
          <TouchableOpacity>
              <View  style={styles. top_bttn}>

@@ -22,9 +22,35 @@ export default class CreateAccount extends React.Component {
             good_conpass:false,
             good_email:false,
             disabled_press:true,
+            recivedEmail:"",
 
          };
     }
+    GetInfo = () =>{
+ 
+        fetch('http://192.168.1.157/php_parkProj/CurrentUser.php', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+                 
+          })
+        
+        }).then((response) => response.json())
+              .then((responseJson) => {
+                this.state.recivedEmail=responseJson['email']
+               
+               console.log(Image);
+               
+              }).catch((error) => {
+                console.error(error);
+              });
+    
+              
+       
+      }
    
     validate(text,type){
         alph=/^[a-zA-Z]+$/
@@ -137,7 +163,8 @@ export default class CreateAccount extends React.Component {
                 email: this.state.Email,
                 Firstname: this.state.FirstName,
                 Lastname: this.state.LastName,
-                password: this.state.UserPass
+                password: this.state.UserPass,
+                UserEmail:this.state.recivedEmail,
             
               })
             
@@ -169,6 +196,8 @@ export default class CreateAccount extends React.Component {
                 textAlign: "center",
                 backgroundColor:"#ebf7fc",
             }}>
+
+                {this.GetInfo()}
             <View   style={styles.container}>
                  <Image
                 style={styles.stretch}

@@ -7,7 +7,7 @@ import * as Animatable from 'react-native-animatable';
 import auth from '@react-native-firebase/auth';
 import firebase from '@react-native-firebase/app';
 
-class Signup extends Component{
+class Reset extends Component{
 
     constructor(props) {
         super(props);
@@ -33,6 +33,7 @@ class Signup extends Component{
             good_email:false,
             disabled_press:true,
             registerUser:false,
+            emailUser:this.props.route.params.ResetEmail,
            
          };
     }
@@ -122,26 +123,12 @@ class Signup extends Component{
   }
         validate(text,type){
 
-            alph=/^[a-zA-Z]+$/
+           
             num=/^[0-9a-zA-Z]+$/
-            email=/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-        if(type=='username'){
-            if(alph.test(text))
-            {
-            this.setState({
-                isValidUser:true,
-                good_name:true,
-            })
-            }
-            else{
-
-                this.setState({
-                    isValidUser:false,
-                    good_name:false,
-                })
-            } 
-        }
-        else if(type=='password'){
+           
+     
+     
+         if(type=='password'){
             if((num.test(text)) && (text.trim().length >7))
             {
             this.setState({
@@ -176,60 +163,29 @@ class Signup extends Component{
 
             }
         }
-        else  if(type=='email'){
-            
-            if(email.test(text))
-            {
-            this.setState({
-                isValidEmail:true,
-                good_email:true,
-            })
-            }
-            else{
-                this.setState({
-                    isValidEmail:false,
-                    good_email:false,
-                })
-            } 
-
-           }
+      
   
         }
 
 
    
 
-        register =async (email,password) => {
-           
-           try{
-            await auth().createUserWithEmailAndPassword (email,password )
-            var user = firebase.auth().currentUser;
-            if(user){
-              
-                user.sendEmailVerification().then(function() {
-                    user.reload();
-                }).catch(function(error) {
-                    console.log(error.message);
-                });
-            }
-           }
-
-           catch (e) {
+     /*   register = async(email,password) => {
+            try {
+                const doRegister = await auth().createUserWithEmailAndPassword(email,password);
+                 console.log(doRegister);
+                 this. Authontication();
+            } catch (e) {
              
-            console.log(e.message);
-             }
-           
-        
+                console.log(e.message);
 
-        };
+            }
 
+
+        };*/
+  UserRegistrationFunction = () =>{
  
-
-      
-
-        UserRegistrationFunction = () =>{
- 
-            fetch('http://192.168.1.157/php_parkProj/SignNew.php', {
+            fetch('http://192.168.1.157/php_parkProj/Reset.php', {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
@@ -237,30 +193,28 @@ class Signup extends Component{
               },
               body: JSON.stringify({
             
-                name: this.state.UserName,
+                email: this.state.emailUser,
+               password: this.state.UserPassword,
             
-                email: this.state.UserEmail,
-            
-                password: this.state.UserPassword
+              
             
               })
             
             }).then((response) => response.json())
                   .then((responseJson) => {
         
-                    if(responseJson == 'User Registered Successfully'){
+                    if(responseJson == 'password updated'){
                      
                        
                         Alert.alert(
                            'Message',
-                           'Singup done successfully!! welcom in parkNow  ',
+                           'Password has been updated. You can log in',
                            
                            [
                           
                              { text: 'OK', onPress: () =>{ 
                              
-                               this.props.sendEmail(this.state.UserEmail)
-                               this.props.openHome()
+                                this.props.navigation.navigate("Sing In");  
                                     
                                } }
                            ],
@@ -279,102 +233,24 @@ class Signup extends Component{
                   });
            
           }
-          Authontication =()=>{
-          
-            var user = firebase.auth().currentUser;
-            user.sendEmailVerification().then(function() {
-                // Email sent
-                console.log("email verified");
-                Alert.alert("email sended"); 
-            
-              }
-
-              ).catch(function(error) {
-                console.log("email Not sent");
-
-             });
-        }
-
+         
 
     render(){
          const width =  this.state.animation_login;
+          
     return(
         
         <View  style={ styles.container } >
-     
-                <Text style={ styles.textSignup}> Welcome Back</Text>
-                <Text style={styles.text} >Sing up! Create Account </Text>
+        
+                <Text style={ styles.textSignup}>Reset Your Password</Text>
+                <Text style={styles.text} >Reset Now </Text>
             <ScrollView style={styles.footer}>
            <Animatable.View 
             
             animation="bounceInUp"
             duration={5000}
            >
-           <ScrollView>
-
-
-
-             <View style={styles.action}>
-                 <View style={{flexDirection:"row"}}>
-             <FontAwesome
-                 name="user-o"
-                 color="#05345a"
-                 size={20}
-                 style={{paddingTop:20,paddingEnd:4}}
-              
-              />
-
-        <TextInput
-        style={{ height:50, width:250,borderColor: 'gray', borderWidth: 1 ,borderRadius:5,marginTop:10,fontSize:12}}
-        placeholder="Enter your name"
-        onFocus={()=>this._foucus("user")}
-     
-        onChangeText={(text)=>{this.setState({ UserName: text});this.validate(text,'username');}}
-        />
-                        
-                {this.state.typing_user ?
-                 this._typing()
-                  :null }
-                </View>
-                 </View>
-                 {this.state.isValidUser ? null :  
-                        <Animated.View
-                        animation="fadeInLeft" duration={500}> 
-                    <Text style={styles.ErrMsg}>UserName must be  just character</Text>
-                    </Animated.View>
-                    }
-
-             <View style={styles.action}>
-          
-             <FontAwesome
-                name="envelope-o"
-                 color="#05345a"
-                 size={20}
-                 style={{paddingTop:21,paddingEnd:4}}
-              
-              />
-
-
-            <TextInput
-                    style={{ height:50, width:250,borderColor: 'gray', borderWidth: 1 ,borderRadius:5,marginTop:10,fontSize:12}}
-                    placeholder="Enter your email"
-                    onFocus={()=>this._foucus("email")}
-                    onChangeText={(text)=>{this.setState({UserEmail: text});this.validate(text,'email');}}
-                    />
-                
-                  {this.state.typing_email ?
-                 this._typing()
-                  :null }
-                 </View>
-                 {this.state.isValidEmail ? null : 
-                    <Animated.View
-                        animation="fadeInLeft" duration={500}
-                        > 
-                        <Text style={styles.ErrMsg}>Email must follow Email format. </Text>
-                        </Animated.View>
-                 }
-                  
-                 
+           <View style={{marginTop:60}}>    
              <View style={styles.action}>
                 <FontAwesome
                     name="lock"
@@ -387,7 +263,7 @@ class Signup extends Component{
                     secureTextEntry
 
                     style={{ height:50, width:250,borderColor: 'gray', borderWidth: 1 ,borderRadius:5,marginTop:10,fontSize:12}}
-                    placeholder="Enter Password"
+                    placeholder="Enter New Password"
                     onFocus={()=>this._foucus("pass")}
                     onChangeText={(text)=>{this.setState({UserPassword : text});this.validate(text,'password');}}
                     />
@@ -420,7 +296,7 @@ class Signup extends Component{
                     secureTextEntry
 
                     style={{ height:50, width:250,borderColor: 'gray', borderWidth: 1 ,borderRadius:5,marginTop:10,marginBottom:30,fontSize:12}}
-                    placeholder="Confirm Password"
+                    placeholder="Confirm New Password"
                     onFocus={()=>this._foucus("passC")}
                  
                     onChangeText={(text)=>{this.setState({UserConPassword : text});this.validate(text,'conpassword');}}
@@ -438,17 +314,17 @@ class Signup extends Component{
                         <Text style={styles.ErrMsg}>Password not match  . </Text>
                         </Animated.View>
                  }
-                 </ScrollView>
+                 </View>
            <TouchableOpacity   
-             style={{ opacity:!(this.state.good_email && this.state.good_conpass && this.state.good_pass && this.state.good_name) ? 0.5 : 1 }}
-            disabled={!(this.state.good_email && this.state.good_conpass && this.state.good_pass && this.state.good_name)}
-            onPress={()=>{this.UserRegistrationFunction();}}
+             style={{ opacity:!(this.state.good_conpass && this.state.good_pass) ? 0.5 : 1 }}
+            disabled={!(this.state.good_conpass && this.state.good_pass)}
+            onPress={()=>{this.UserRegistrationFunction();}}  
            >
             
            <View style={styles.Butt_cont}>
                <Animated.View style={[styles. anmation,{width}]}>
                 {this.state.enable?
-               <Text style={styles.logText}>Sign Up</Text>
+               <Text style={styles.logText}>Reset Password</Text>
                :
                <FontAwesome
                name="check"
@@ -460,11 +336,8 @@ class Signup extends Component{
            </View>
            </TouchableOpacity>
            <View style={styles.signUp}>
-              
-               <Text style={{color:'black'}}>you already have account? </Text>
-               <Text style={{color:'#f7c202'}}onPress={()=>this.props.navigation.goBack()}> Sign In</Text>
-
-           </View>
+              <Text style={{color:'#f7c202'}} onPress={()=>this.props.navigation.goBack()}> Back to Forget Password</Text>
+          </View>
            </Animatable.View>
            </ScrollView>
 
@@ -499,7 +372,7 @@ const width = Dimensions.get("screen").width;
         },
 
         footer:{
-            marginTop:35,
+            marginTop:60,
             backgroundColor:"#e6e7f0",
             flex:1.5,
             paddingLeft:30,
@@ -583,4 +456,4 @@ const width = Dimensions.get("screen").width;
 
 
 
-    export  default Signup;
+    export  default Reset;

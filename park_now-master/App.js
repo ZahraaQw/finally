@@ -9,6 +9,7 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import Signup from './screens/Signup';
 import SignInScreen from './screens/SignInScreen';
 import ForgetPass from './screens/ForgetPassword';
+import Reset from './screens/Reset';
 import FindMyPosition from './screens/FindMyPosition';
 import { Alert } from 'react-native';
 const Stack = createStackNavigator();
@@ -138,6 +139,28 @@ setUserEmail=(childData)=>{
       }
     }}
     component={ForgetPass }  /> 
+    <Stack.Screen name="Reset" 
+     options={{
+     
+    
+      headerTintColor:"#04243d",
+      headerTitleStyle:{
+          fontSize:16,
+          color:"#04243d",
+          
+      },
+      headerLeftContainerStyle:{
+       paddingLeft:12,
+    
+       
+      },
+      headerStyle: {
+        height: 50,
+        backgroundColor:"#00457C",
+        opacity:0.67
+      }
+    }}
+    component={Reset} /> 
     </Stack.Navigator>)
       :
     <App2 name="HomeStackScreen" email={this.state.userEmail}/>

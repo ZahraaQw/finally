@@ -117,7 +117,7 @@ class ForgetPass extends Component{
             } 
         }
         }
-        testPush=()=>{
+    /*    testPush=()=>{
             PushNotification.localNotification({
                 title:"my notification title",
                 message:"check your email"
@@ -140,7 +140,7 @@ class ForgetPass extends Component{
         }
     }
 
-        reset = (email) => {
+     /*   reset = (email) => {
             try {
              
               const  password= firebase.auth().sendPasswordResetEmail(email);
@@ -157,8 +157,58 @@ class ForgetPass extends Component{
                 );
             }
         };
+*/
+UserRegistrationFunction = () =>{
+ 
+    fetch('http://192.168.1.157/php_parkProj/Forgetpass.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+    
+      //  name: this.state.UserName,
+    
+        email: this.state.UserEmail,
+    
+      //  password: this.state.UserPassword
+    
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+    
+    // Showing response message coming from server after inserting records.
+           // Alert.alert(responseJson);
 
+           if(responseJson == 'Login success'){
+                     Alert.alert(
+                        'Message',
+                        'valid Email. you can Reset your Password Now',
+                        
+                        [
+                       
+                          { text: 'OK', onPress: () =>{ 
+                            this.props.navigation.navigate("Reset",{ResetEmail:this.state.UserEmail});
+                            } }
+                        ],
+                        { cancelable: false }
+                      )
+                
 
+           }
+           else  if(responseJson == 'Login Error'){
+ 
+               Alert.alert("Email not found, try again");
+
+           }
+    
+          }).catch((error) => {
+            console.error(error);
+          });
+   
+  }
     render(){
          const width =  this.state.animation_login;
     return(
@@ -215,12 +265,11 @@ class ForgetPass extends Component{
                    <TouchableOpacity
                      style={{ opacity:!(this.state.isGoodEmail) ? 0.5 : 1 }}
                      disabled={!(this.state.isGoodEmail)}
-     
-                    onPress={()=>{this.reset(this.state.UserEmail);}}>
-           <View style={styles.Butt_cont}>
+                     onPress={()=>{this.UserRegistrationFunction();}}>
+            <View style={styles.Butt_cont}>
                <Animated.View style={[styles. anmation,{width}]}>
                 {this.state.enable?
-               <Text style={styles.logText}>Send</Text>
+               <Text style={styles.logText}>Reset</Text>
                :
                <FontAwesome
                name="check"

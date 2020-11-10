@@ -58,7 +58,7 @@ const App2 =(props)=>{
         
     
            <Drawer.Screen  name="HomeStackScreen" component={HomeStackScreen}  />
-           <Drawer.Screen name="Exit" component={ExitQr }  />
+           <Drawer.Screen name="Exit" component={ExitQr}  />
            <Drawer.Screen name="Enter" component={EnterQr } />
            <Drawer.Screen name="Find" component={Find } />
            <Drawer.Screen name="SingOut" component={SignOut} />

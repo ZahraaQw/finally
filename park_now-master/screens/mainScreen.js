@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {Text,View,StyleSheet, Button,Alert} from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
@@ -9,7 +9,6 @@ import Home from "./home";
 import ProfilScreen from "./ProfilScreen";
 import SettingScreen from "./SettingScreen";
 import PaymentScreen from "./PaymentScreen";
-
 
 const HomeStack = createStackNavigator();
 
@@ -176,9 +175,60 @@ function ProfStackScreen({navigation,props}) {
 
 const PaymentStack = createStackNavigator();
 
-function PaymentStackScreen({navigation}) {
+function PaymentStackScreen({navigation,props}) {
+
+ const[email,setemail]=useState("");
+ const[Points,setPoints]=useState(0);
+
+  const GetInfo = () =>{
+ 
+    fetch('http://192.168.1.157/php_parkProj/CurrentUser.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+    
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+        
+            setemail(responseJson['email']);
+        
+          }).catch((error) => {
+            console.error(error);
+          });
+   
+  }
+  
+  const GetInfo2 = () =>{
+   
+    fetch('http://192.168.1.157/php_parkProj/getMailPoint.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+            email:email 
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+            setPoints(responseJson['Points']);           
+          }).catch((error) => {
+            console.error(error);
+          });
+  
+          
+   
+  }
+
   return (
     <PaymentStack.Navigator
+
     screenOptions ={{
       headerStyle:{
         backgroundColor:"#00457C",   
@@ -195,6 +245,12 @@ function PaymentStackScreen({navigation}) {
 
    }}
     >
+         { 
+        
+        GetInfo(),
+        GetInfo2()     
+        }
+
    <PaymentStack.Screen name="Payment" component={PaymentScreen}  options={{
     headerLeft: () => (
       <View style={{marginLeft: 20}}>
@@ -206,8 +262,20 @@ function PaymentStackScreen({navigation}) {
           onPress={() => navigation.toggleDrawer()}
         />
       </View>
-    ),}} />
-     
+    ),
+    headerRight: () => (
+      <View style={{marginTop:5,flexDirection:'row'}}>
+        <Icon.Button
+         name="database"
+          size={20}
+          color='#99d4e9'
+          backgroundColor="#00457C"
+          
+        />
+        <Text style={{marginRight:20,fontSize:18,color:"#99d4e9",marginTop:5}}>{Points}</Text>
+      </View>
+    )
+    }} />
     </PaymentStack.Navigator>
   );
 }

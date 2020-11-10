@@ -4,15 +4,43 @@ import { Button, IconButton } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FontAwesome from 'react-native-vector-icons/dist/FontAwesome';
 import Duration from './Duration';
+import Autocomplete from 'react-native-autocomplete-input';
+ 
 
 
 const ParkCar=({navigation})=>{
+
+  useEffect(() => {
+    fetch('http://192.168.1.157/php_parkProj/Locations.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+            Locations=responseJson; 
+          //  console.log(Locations);
+            setFilms(Locations.split(','));          
+          }).catch((error) => {
+            console.error(error);
+          });
+  
+  }, []);
  
     const [date, setDate] = useState(new Date());
-    const [mode, setMode] = useState('date');
+    const [mode, setMode] = useState();
     const [time, setTime] = useState(new Date());
     const [show, setShow] = useState(false);
   
+    let Locations="";
+    let isDestAvalable= false;
+    const [films, setFilms] = useState([]);  // For the main data
+    const [filteredFilms, setFilteredFilms] = useState([]); // Filtered data
+    const [selectedValue, setSelectedValue] = useState(); // selected data
   
     const onChange = (event, selectedValue) => {
         if (mode == 'date') {
@@ -49,14 +77,51 @@ const ParkCar=({navigation})=>{
         return ` ${time.getHours()}:${time.getMinutes()}`;
       };
 
+
+      const findFilm = (query) => {
+        if (query) {
+          const regex = new RegExp(`${query.trim()}`, 'i');
+          setFilteredFilms(
+              films.filter((film) => film.search(regex) >= 0)
+          );
+        } else {
+          setFilteredFilms([]);
+        }
+      };
+
      
             return(
           <ScrollView  style={ styles.container }>
                  <View style={{flexDirection:'row'}}>
-                 <TextInput 
-                    style={styles.inputStl}
-                    placeholder='Enter your intended destination'></TextInput>
-                    <View style={{marginTop:14,marginLeft:280,position:'absolute'}}>
+
+                 <Autocomplete
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    inputContainerStyle={styles.inputStl}
+                    data={filteredFilms}
+                    defaultValue={
+                      JSON.stringify(selectedValue) === '{}' ?
+                      '' :
+                      selectedValue
+                    }
+                    onChangeText={(text) => findFilm(text)}
+                    placeholder="Enter your intended destination"
+                    renderItem={({item}) => (
+
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedValue(item);
+                          setFilteredFilms([]);
+                        }}>
+                        <Text style={styles.itemText}>
+                            {item}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                    {
+                    (selectedValue) == null ? isDestAvalable=false:isDestAvalable=true}
+                    <View style={{marginTop:10,marginLeft:300,position:'absolute'}}>
                      <FontAwesome
                         name="search"
                         color="gray"
@@ -98,14 +163,21 @@ const ParkCar=({navigation})=>{
                        <TouchableOpacity style={[styles.top_bttn,{
                          marginLeft:35
                        }]}
-                   onPress={() => {navigation.navigate('available slots')}}
+                       disabled={!(isDestAvalable)}
+                   onPress={() => {navigation.navigate('available slots',{
+                    SelectDest:selectedValue,SelectDate:date,SelectTime:time
+              })}}
                        >
                               <Text> SLOTS </Text>
                       </TouchableOpacity>
                       <TouchableOpacity style={[styles.top_bttn,{
                         marginLeft:10
                       }]}
-                      onPress={() => {navigation.navigate('available Parking')}}
+                      disabled={!(isDestAvalable)}
+
+                      onPress={() => {navigation.navigate('available Parking',{
+                        SelectDest:selectedValue,SelectDate:date,SelectTime:time
+                  })}}
                      >
                     <Text>PARKING</Text>
                       </TouchableOpacity>
@@ -131,12 +203,14 @@ const styles = StyleSheet.create({
 
     inputStl:{
      
+       borderColor:"white",
         borderBottomColor:"#00457C",
         borderBottomWidth:1.4,
+
         fontSize:14,
-        marginLeft:20,
-        width:280,
-        marginBottom:20,
+        marginLeft:10,
+        width:320,
+      //  marginBottom:20,
       },
 
       date_time:{
@@ -185,7 +259,20 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         alignItems:'center'
      },
-   
+     autocompleteContainer: {
+      backgroundColor: '#ffffff',
+      borderWidth: 0,
+    
+    },
+      itemText: {
+        fontSize: 14,
+        paddingTop: 5,
+        paddingBottom: 5,
+        color:"#4f4d4f",
+        borderBottomColor:"#becccc",
+        borderBottomWidth:1.4,
+       // margin: 2,
+      },
 
 });
 export  default ParkCar;
