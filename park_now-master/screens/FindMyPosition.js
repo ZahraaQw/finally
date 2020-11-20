@@ -17,24 +17,101 @@ import Carousel from 'react-native-snap-carousel';
 
 export default class FindMyPosition extends Component {
 
-  static navigationOptions = {
-    title: 'San Francisco',
-  };
+  constructor(props) {
+    super(props);
+    this.state = { 
+      
+      myEmail:props.Email,
+      SlotsId:[],
+      Slots_latitude:' ',
+      Slots_longitude:' ',
+      SlotsInform:[],
+      id:'',
+    
+      Points:'',
+      markers: [],
+      intailLocation:{
+      latitude: 0,
+      longitude: 0,
+      latitudeDelta: 0.09,
+      longitudeDelta: 0.035
 
-  state = {
-    markers: [],
-    coordinates: [
-        {name:"slot 1",latitude:32.06783783751630,longitude:35.31,price:"5 Points",image: require('../assets/Car-Parking.jpg') },
-        {name:"slot 2",latitude:32.08,longitude:35.34180,price:"7 Points",image: require('../assets/welcome2.jpg') },
-        {name:"slot 3",latitude:32.08145,longitude:35.3168,price:"10 Points",image: require('../assets/parking.jpg') },
-        {name:"slot 4",latitude:32.06783783751625,longitude:35.31842568,price:"12 Points",image: require('../assets/parking2.jpg') },
-    ]
-  }
+      },
+      coor: [{
+        name:"ParkNow",image:"https://www.laoistoday.ie/wp-content/uploads/2017/10/ParkingMeter.jpg",latitude:"",longitude:"",price:"reserved Slot"
+      }],
+      
+      coordinates: [],
+      
+     };
+     {this.CurrentBooking()}
+    }
 
   componentDidMount() {
     this.requestLocationPermission();
+
   }
 
+  CreateMapS = () =>{
+ 
+    fetch('http://192.168.1.157/php_parkProj/CreateMap.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+    
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+        
+        
+          }).catch((error) => {
+            console.error(error);
+          });
+   
+  }
+
+
+ 
+
+
+ GetSlotsInfo = () =>{
+ 
+    fetch('http://192.168.1.157/php_parkProj/getMapInfo.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+    
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+           
+            this.state.SlotsId=responseJson['id'];
+            this.state.Slots_latitude=responseJson['latitude'];
+           this.state.Slots_longitude=responseJson['longitude'];
+        
+          }).catch((error) => {
+            console.error(error);
+          });
+   
+  }
+   
+    CreateArrays=()=>{
+      this.state.SlotsId.forEach((item,index) => {
+        let obj = {};
+        obj.id = item;
+        obj.latitude = this.state.Slots_latitude[index];
+        obj.longitude = this.state.Slots_longitude[index];
+        this.state.SlotsInform.push(obj);
+      })
+    }
 
 
   requestLocationPermission = async () => {
@@ -55,6 +132,8 @@ export default class FindMyPosition extends Component {
     }
   }
 
+ 
+
   locateCurrentPosition = () => {
     Geolocation.getCurrentPosition(
       position => {
@@ -68,24 +147,25 @@ export default class FindMyPosition extends Component {
         }
 
         this.setState({ initialPosition });
+        this.setState({intailLocation:initialPosition});
       },
       error => Alert.alert(error.message),
-      { enableHighAccuracy: true, timeout: 90000 }
+      { enableHighAccuracy: true, timeout: 1000000 }
     )
   }
+
   onCarouselItemChange = (index) => {
-    let location = this.state.coordinates[index];
+    let location = this.state.SlotsInform[index];
 
     this._map.animateToRegion({
-      latitude: location.latitude,
-      longitude: location.longitude,
+      latitude: parseFloat(location.latitude),
+      longitude:parseFloat(location.longitude),
       latitudeDelta: 0.09,
       longitudeDelta: 0.035
     })
 
     this.state.markers[index].showCallout()
   }
-
   onMarkerPressed = (location, index) => {
     this._map.animateToRegion({
       latitude: location.latitude,
@@ -99,17 +179,54 @@ export default class FindMyPosition extends Component {
 
   renderCarouselItem = ({ item }) =>
     <View style={styles.cardContainer}>
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.priceTitle}>{item.price}</Text>
-      <Image style={styles.cardImage} source={item.image} />
+      
+      <Text style={styles.cardTitle}>slot {item.name}</Text>
+      <Text style={styles.priceTitle}>{item.price} Points</Text>
+      
+      <Image style={styles.cardImage} source={{uri:item.image}} />
+    
     </View>
 
+
+CurrentBooking=()=>{
+  fetch('http://192.168.1.157/php_parkProj/readCurrentBook.php', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+   
+    })
+  
+  }).then((response) => response.json())
+        .then((responseJson) => {
+        
+        this.state.coordinates= Array(responseJson)
+        this.state.id=responseJson['name']
+        this.state.coordinates=  this.state.coor.concat(this.state.coordinates)
+       // console.log(this.state.coordinates)
+        }).catch((error) => {
+          console.error(error);
+        });
+ 
+}
 
   render() {
     return (
       <View style={styles.container}>
+
+          { 
+           this.CreateMapS(),
+           this.GetSlotsInfo(),
+           this.CreateArrays(),
+           this.CurrentBooking(),
+           console.log(this.state.coordinates)
+           }
+
         <MapView
           provider={PROVIDER_GOOGLE}
+       
           ref={map => this._map = map}
           showsUserLocation={true}
           zoomEnabled={true}
@@ -122,41 +239,35 @@ export default class FindMyPosition extends Component {
           initialRegion={this.state.initialPosition}>
 
           <Circle
-            center={{ latitude:32.067816799825856, longitude:35.315367195999336}}
+            center={{ latitude:this.state.intailLocation.latitude, longitude:this.state.intailLocation.longitude}}
             radius={4000}
             fillColor={'rgba(200, 300, 200, 0.5)'}
           />
-        
-
+     
+         {this.CurrentBooking() }
           {
-            this.state.coordinates.map((marker, index) => (
+            this.state.SlotsInform.map((marker, index) => (
               <Marker
-                key={marker.name}
+                key={index}
                 ref={ref => this.state.markers[index] = ref}
-                onPress={() => this.onMarkerPressed(marker, index)}
-                coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
-              >
+               onPress={() => this.onMarkerPressed(marker, index)}
+               pinColor={'blue'}
+               coordinate={{ latitude: parseFloat(marker.latitude), longitude: parseFloat(marker.longitude) }}
+               
+             >
                 <Callout>
-                  <Text>{marker.name}</Text>
-                  <Text>{marker.price}</Text>
+                  <Text>{marker.id}</Text>
+                  
                 </Callout>
 
               </Marker>
             ))
           }
-
-     <Polyline
-		coordinates={[
-            {latitude:32.067816799825856,longitude:35.315367195999336},
-            {latitude:32.08145,longitude:35.3168},
-           
-		]}
-		strokeColor="red" 
-		strokeWidth={4}
-	/>
-
+      
 
         </MapView>
+        {this.CurrentBooking() }
+         
         <Carousel
           ref={(c) => { this._carousel = c; }}
           data={this.state.coordinates}
@@ -165,9 +276,9 @@ export default class FindMyPosition extends Component {
           sliderWidth={Dimensions.get('window').width}
           itemWidth={300}
           removeClippedSubviews={false}
-          onSnapToItem={(index) => this.onCarouselItemChange(index)}
+          onSnapToItem={() => this.onCarouselItemChange(this.state.id-1)}
         />
-       
+        {console.log(this.state.id)}
       </View>
     );
   }

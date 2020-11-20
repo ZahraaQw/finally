@@ -1,25 +1,158 @@
-import React, { useState } from 'react';
-import {StyleSheet,Button,TextInput,View,Text,TouchableOpacity,ScrollView,Modal} from 'react-native';
+import React, { useState,useEffect} from 'react';
+import {StyleSheet,Button,TextInput,View,Text,TouchableOpacity,ScrollView,Modal, Alert} from 'react-native';
 import {Formik} from 'formik';
 import FontAwesome from 'react-native-vector-icons/dist/FontAwesome';
 //import { IconButton, Colors } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 
-export default ReviewForm=({navigation})=>{
-  const [ModaleOpen, setModaleOpen] = useState(false);
+const ReviewForm=(props)=>{
+
+    let price= props.Price;
+    let id = props.id;
+    let childId = props.ChId;
+    let time=props.Time;
+    let dt= props.Dat;
+    let duration= props.duration;
+    let UserEmail= props.Uemail;
+   const [ModaleOpen, setModaleOpen] = useState(false);
    const [qrdata, setQRdata] = useState('');
   [isValidNumber, setisValidNumber]= useState(true);
   [isValidPass, setisValidPass]= useState(true);
   [isQrdisadled, setisQrdisadled]= useState(true);
+  const[PayPalEmail,setPayPalEmail]= useState();
+  const[Carpalette,setCarpalette]=useState();
+  const[Password,setPassword]=useState();
+  const[isGoodPass,setisGoodPass]=useState(false);
+  const[isGoodNum,setisGoodNum]=useState(false);
+ 
+
+  ReserveSlot = () =>{
+ 
+    fetch('http://192.168.1.157/php_parkProj/SlotReservation.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+         Email:UserEmail,
+         Price:price,
+         id:id,
+         childId:childId,
+         Stime:time,
+         Sdate:formatDate(dt),
+         duration:duration,
+         EnterQr:qrdata,
+         ExitQr:(qrdata+"exitcode"),
+         CarNum:Carpalette,
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+           
+        if(responseJson== 'Points updated'){
+            setModaleOpen(true);
+        }
+        else{
+          console.log(responseJson);
+        }
+          }).catch((error) => {
+            console.error(error);
+          });
+   
+  }
+
+
+  const TestEmail = () =>{
+ 
+    fetch('http://192.168.1.157/php_parkProj/SlotBooking.php', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+
+      },
+      body: JSON.stringify({
+         Email:UserEmail,
+         PayPalPass:Password,
+         Price:price,
+      })
+    
+    }).then((response) => response.json())
+          .then((responseJson) => {
+            console.log(responseJson);
+            console.log(price);
+
+           if(responseJson== "Points enugh"){
+            Alert.alert(
+              'Message',
+              'Are you sure to complete the reservation ?',
+              
+              [
+             
+                { text: 'OK', onPress: () =>{ 
+                     
+                  ReserveSlot();
+                 
+
+                  } }
+              ],
+              { cancelable: false }
+            )
+           }
+           if(responseJson=="Points not enugh"){
+            Alert.alert(
+                'Message',
+                'your points not enugh,go to PayPal and buy',
+                
+                [
+               
+                  { text: 'OK', onPress: () =>{ 
+
+                    props.buyPoints();
+
+     
+                    } }
+                ],
+                { cancelable: false }
+              )
+           }
+
+           if(responseJson=="UserEmail not found"){
+            Alert.alert(
+                'Message',
+                'You do not have PayPalAccount , create one',
+                
+                [
+               
+                  { text: 'OK', onPress: () =>{ 
+
+                    props.goToPay();
+
+                    } }
+                ],
+                { cancelable: false }
+              )
+           }
+           else if(responseJson=="Password Not correct"){
+            Alert.alert("Incorrect Password" )
+           }
+        
+          }).catch((error) => {
+            console.error(error);
+          });
+   
+  }
   
  const validate=(text,type)=>{
-    num=/[0-9]+$/
-    numP =/^[0-9a-zA-Z]+$/
+    num=/[0-9]+$/;
+    numP =/^[0-9a-zA-Z]+$/;
     if(type=='Number'){
     if((num.test(text)) && (text.trim().length ==7))
     {
   
         setisValidNumber(true);
+        setisGoodNum(true);
        setisQrdisadled(false);
         setQRdata(text);
  
@@ -27,6 +160,7 @@ export default ReviewForm=({navigation})=>{
     else{
 
         setisValidNumber(false);
+       setisGoodNum(false);
         setisQrdisadled(true);
 
     }
@@ -38,21 +172,27 @@ export default ReviewForm=({navigation})=>{
   
         setisValidPass(true);
         setisQrdisadled(false);
+        setisGoodPass(true);
 
  
     }
     else{
 
         setisValidPass(false);
+        setisGoodPass(false);
         setisQrdisadled(true);
 
     }
 
    }
-}
-    
+}  
+const formatDate = (date) => {
+  return `${date.getDate()}-${date.getMonth() +
+    1}-${date.getFullYear()}`;
+};
     return(
         <ScrollView>
+     
             <Modal  visible={ModaleOpen} animationType="fade" >
                 <View>
 
@@ -78,7 +218,22 @@ export default ReviewForm=({navigation})=>{
 
                 <TouchableOpacity 
                  
-                 onPress={() =>{setModaleOpen(false);
+                 onPress={() =>{
+                  Alert.alert(
+                    'Message',
+                    'thank you for use ParkNow, you can track your reservation',
+                    
+                    [
+                   
+                      { text: 'OK', onPress: () =>{ 
+                           props.goHome();
+                           setModaleOpen(false);
+                        } }
+                    ],
+                    { cancelable: false }
+                  )
+               
+                
                 }}
                   >
                 <View style={styles.canslbuttStl}>
@@ -94,24 +249,15 @@ export default ReviewForm=({navigation})=>{
             
                 </Modal>
 
-            <Formik
-            initialValues={{Carpalette:'',Passwrod:''}}
-            onSubmit={(values)=>{
-               
-            }}
-            >
-                {
-                (props)=>(
+        
                     <ScrollView>
             
                         <TextInput
                     
                         style={styles.inputStl}
                         placeholder='Car palette number'
-                       // onChangeText={props.handleChange('Carpalette')}
-                        //value={props.values.Carpalette}
                         keyboardType='numeric'
-                        onChangeText={(text)=>{validate(text,'Number')}}
+                        onChangeText={(text)=>{setCarpalette(text);validate(text,'Number')}}
                         
                         />
                                  {isValidNumber ? null : 
@@ -122,23 +268,19 @@ export default ReviewForm=({navigation})=>{
                         <TextInput
                          secureTextEntry
                         style={styles.inputStl}
-                        placeholder='********'
-                   //     onChangeText={props.handleChange('password')}
-                        value={props.values.password}
-                        onChangeText={()=>{(text)=>validate(text,'password');props.handleChange('password')}}
+                        placeholder='Enter PayPal password'
+                        onChangeText={(text)=>{setPassword(text);validate(text,'password')}}
                         
                         />
                           {isValidPass ? null : 
                       <View> 
-                        <Text style={styles.ErrMsg}>Password must be 8 long  . </Text>
+                        <Text style={styles.ErrMsg}>Password must be  more than 8 long  . </Text>
                         </View>
                  }
                         <TouchableOpacity 
-                        disabled={isQrdisadled}
-                        style={{ opacity: isQrdisadled? 0.7 : 1 }}
-                        onPress={()=>{
-                        props.handleSubmit;
-                        setModaleOpen(true);//setQRdata(props.values.Carpalette);
+                        disabled={!(isGoodPass && isGoodNum) }
+                        style={{ opacity: !(isGoodPass && isGoodNum)? 0.7 : 1 }}
+                        onPress={()=>{TestEmail();//setQRdata(props.values.Carpalette);
                         
                       
                         }}>
@@ -155,14 +297,7 @@ export default ReviewForm=({navigation})=>{
 
                           </ScrollView>
 
-                       
-                
-
                     
-                )
-                }
-
-            </Formik>
      
         </ScrollView>
     );
@@ -243,3 +378,6 @@ ErrMsg:{
 }
 
 })
+
+
+export default ReviewForm;

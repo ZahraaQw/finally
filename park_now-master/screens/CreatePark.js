@@ -36,7 +36,8 @@ const CreatePark=({navigation})=>{
               size={25}
               color='#ebf7fc'
               backgroundColor="#00457C"
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate('HomeStackScreen')
+            }
             />
           </View>
         ),}}/>

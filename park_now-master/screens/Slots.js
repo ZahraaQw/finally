@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {View,Text,StyleSheet,TouchableOpacity,ScrollView,Modal, Button,Alert} from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 //import Icon from 'react-native-vector-icons/FontAwesome';
@@ -9,18 +9,24 @@ import ReviewForm from './FormikReview';
 
 
 const Slots=({navigation,route})=>{
+
+    
     let SelectTime=route.params.SelectTime;
     let SelectDate=route.params.SelectDate;
     let SelectDest=route.params.SelectDest;
 
    const [modalOpen, setModaleOpen] = useState(false);
-   const [priceModalOpen, setPriceModaleOpen] = useState(false);
+   const [priceModalOpen, setPriceModaleOpen] = useState(true);
    const [soltPrice, setslotPrice]=useState(0);
+   const[isColored,setisColored]=useState(false);
    
+  const[LeftBuilding,setLeftBuilding] = useState();
+  const[RightBuilding,setRightBuilding] = useState();
+  const[LongDuration,setLongDuration]=useState();
+ 
 
    const [SlotIdTitle,setSlotId] = useState("0");
    const[disableOk, setdisableOk] = useState(true);
-    
    const[colorbtn0, setcolorbtn0]=useState("#445454");
    const[colorbtn1, setcolorbtn1]=useState("#445454");
    const[colorbtn2, setcolorbtn2]=useState("#445454");
@@ -35,81 +41,26 @@ const Slots=({navigation,route})=>{
    const[isDisabled4,setisDisabled4]=useState(false);
    const[isDisabled5,setisDisabled5]=useState(false);
 
+  const[Rightslotinfo,setRightslotinfo]=useState([]);
+  const[Leftslotinfo,setLeftslotinfo]=useState([]);
+ 
+
+  const[LeftAvailbe,setLeftAvailbe]= useState([]);
+  const[RightAvailbe,setRightAvailbe]=useState([]);
+  const[childId,setchildId]=useState();
+
+  [UserEmail,setUserEmail] = useState();
 
 
-
-   var slotinfo = [
-    {id: "1", isAvaliable: true},
-    {id: "2", isAvaliable: true},
-    {id: "3", isAvaliable: false},
-    {id: "4", isAvaliable: false},
-    
-    {id: "5", isAvaliable: true},
-    {id: "6", isAvaliable: true},
-    {id: "7", isAvaliable: true},
-    {id: "8", isAvaliable: false},
-
-    {id: "9", isAvaliable:  false},
-    {id: "10", isAvaliable: true},
-    {id: "11", isAvaliable: false},
-    {id: "12", isAvaliable: false},
-    
-    {id: "13", isAvaliable: false},  
-    {id: "14", isAvaliable: true},
-    {id: "15", isAvaliable: false},
-    {id: "16", isAvaliable: false},
-    
-    
-    {id: "17", isAvaliable: false},
-    {id: "18", isAvaliable: true},
-    {id: "19", isAvaliable: true},
-    {id: "20", isAvaliable: false},
-
-
-  ];
-
-
-
-  var rightSlots = [
-    {id: "1", isAvaliable: true},
-    {id: "2", isAvaliable: true},
-    {id: "3", isAvaliable: true},
-    {id: "4", isAvaliable: false},
-
-    {id: "5", isAvaliable: true},
-    {id: "6", isAvaliable: true},
-    {id: "7", isAvaliable: true},
-    {id: "8", isAvaliable: true},
-
-    {id: "9", isAvaliable:  true},
-    {id: "10", isAvaliable: true},
-    {id: "11", isAvaliable: true},
-    {id: "12", isAvaliable: false},
-    
-    {id: "13", isAvaliable: false},  
-    {id: "14", isAvaliable: true},
-    {id: "15", isAvaliable: true},
-    {id: "16", isAvaliable: false},
-    
-
-    
-    {id: "17", isAvaliable: false},  
-    {id: "18", isAvaliable: true},
-    {id: "19", isAvaliable: true},
-    {id: "20", isAvaliable: false},
-    
-   
-  ];
+   var slotinfo2=[];
+   var slotinfoR2=[];
 
 
   const closeModal=()=>{
     setModaleOpen(false);
   }
 
-  const ChnageSlotColor=()=>{
-    
-  }
-
+ 
   const confirmBook=()=>{
     Alert.alert(
         'Alert Title',
@@ -123,7 +74,7 @@ const Slots=({navigation,route})=>{
           { text: 'OK', onPress: () =>{ 
            // setTotalDuration(0);
            setPriceModaleOpen(false);
-           setModaleOpen(true);
+         
             } }
         ],
         { cancelable: false }
@@ -148,10 +99,11 @@ const Slots=({navigation,route})=>{
     setisDisabled5(false);
    }
 
-    const bookSlot=(id,price)=>{
+    const bookSlot=(id,price,duration)=>{
         
         
-        setslotPrice(price); 
+        setslotPrice(price);
+        setLongDuration(duration); 
         if(id == 0){
             setcolorbtn0("green");
             setdisableOk(false);
@@ -219,32 +171,146 @@ const Slots=({navigation,route})=>{
         }
     }
     const formatDate = (date) => {
-      return `${date.getDate()}/${date.getMonth() +
-        1}/${date.getFullYear()}`;
+      return `${date.getDate()}-${date.getMonth() +
+        1}-${date.getFullYear()}`;
     };
 
     const formatTime=(time)=>{
-      return ` ${time.getHours()}:${time.getMinutes()}`;
+      return `${time.getHours()}:${time.getMinutes()}`;
     };
+    
+    CreateArray=()=>{
+      Leftslotinfo.forEach((item,index) => {
+        let obj = {};
+        obj.id = item;
+        obj.isAvaliable = LeftAvailbe[index];
+        slotinfo2.push(obj);
+      })
+
+      Rightslotinfo.forEach((item,index) => {
+        let obj1 = {};
+        obj1.id = item;
+        obj1.isAvaliable = RightAvailbe[index];
+        slotinfoR2.push(obj1);
+      })
+    }
+ 
+     GetSlots= () =>{
+ 
+      fetch('http://192.168.1.157/php_parkProj/getSlots.php', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+        
+          destination: SelectDest,
+          duration:LongDuration,
+          sdate:formatDate(SelectDate),
+          stime:formatTime(SelectTime),
+
+          
+        })
+      
+      }).then((response) => response.json())
+            .then((responseJson) => {
+              
+              setLeftBuilding(responseJson['leftBuilding']);
+              setRightBuilding(responseJson['RightBuilding']);
+              setRightslotinfo(responseJson['RightSlot']);
+              setLeftslotinfo(responseJson['LeftSlot']);
+              setLeftAvailbe(responseJson['AvailLeft']);
+              setRightAvailbe(responseJson['AvailRight']);
+              setchildId(responseJson['childId']);
+              
+    
+            }).catch((error) => {
+              console.error(error);
+            });
+     
+    }
+    const GetEmail = () =>{
+ 
+      fetch('http://192.168.1.157/php_parkProj/CurrentUser.php', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+      
+        })
+      
+      }).then((response) => response.json())
+            .then((responseJson) => {
+              setUserEmail(responseJson['email']);
+            
+          
+            }).catch((error) => {
+              console.error(error);
+            });
+     
+    }
+    const GoPayPal=()=>{
+      navigation.navigate('PayAccount');
+    }
+
+    const BuyPoints=()=>{
+      navigation.navigate('Payment');
+    }
+
+    const BackHome=()=>{
+      setModaleOpen(false);
+      navigation.navigate('available slots');
+      GetSlots();
+     setisColored(true);
+     SetCurrentBooking(); 
+
+    }
+
+    SetCurrentBooking = () =>{
+ 
+      fetch('http://192.168.1.157/php_parkProj/getCurrentBook.php', {
+        method: 'POST',
+        headers: {              
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+        
+          Email:UserEmail,
+      
+        })
+      
+      }).then((response) => response.json())
+            .then((responseJson) => {
+    
+            }).catch((error) => {
+              console.error(error);
+            });
+     
+    }
+ 
   let Reserve=0;
-  let Empty= slotinfo.length;
+  let Empty= 0;
 
     return(
     <View style={styles.container}>
-      {
-        T= formatDate(SelectDate),
-        D= formatTime(SelectTime),
-      console.log(SelectDest,T,D)}
+         {CreateArray(),
+         GetEmail()
+     }
         < ScrollView style={styles.Boody}>
+        
              <View  style={styles. top_bttn}>
-                <Text>Entrance</Text>
+               <Text>{SelectDest}</Text>
              </View>
          <View style={styles.left_btn}>
             <Text style={{ transform:[{rotate:"90deg"}],paddingTop:250,
             width:300,//position:'absolute',
            marginTop:80,
             }}>
-           _          Left Building         _</Text>
+           _               {LeftBuilding}            _</Text>
          </View>
          
          <View style={styles.right_btn}>
@@ -252,7 +318,7 @@ const Slots=({navigation,route})=>{
           paddingTop:250,
           width:300,//position:'absolute',
          marginTop:80,
-        }}>_            Right Building         _</Text>
+        }}>_             {RightBuilding}          _</Text>
          </View>
          <Modal  visible={priceModalOpen} animationType="slide">
              <ScrollView style={styles.ModalContent}>
@@ -284,7 +350,7 @@ const Slots=({navigation,route})=>{
                           size={35}
                           disabled={isDisabled0}
                         
-                          onPress={()=>{bookSlot(0,10)}}
+                          onPress={()=>{bookSlot(0,10,30)}}
 
                         />
 
@@ -309,7 +375,7 @@ const Slots=({navigation,route})=>{
                           icon="checkbox-multiple-marked-circle"
                           disabled={isDisabled1}
                           size={35}
-                          onPress={()=>{bookSlot(1,20)}}
+                          onPress={()=>{bookSlot(1,20,60)}}
 
                         />
                     
@@ -333,7 +399,7 @@ const Slots=({navigation,route})=>{
                           icon="checkbox-multiple-marked-circle"
                           disabled={isDisabled2}
                           size={35}
-                          onPress={()=>{bookSlot(2,30)}}
+                          onPress={()=>{bookSlot(2,30,90)}}
 
                         />
                       </View>
@@ -356,7 +422,7 @@ const Slots=({navigation,route})=>{
                           icon="checkbox-multiple-marked-circle"
                           disabled={isDisabled3}
                           size={35}
-                          onPress={()=>{bookSlot(3,40)}}
+                          onPress={()=>{bookSlot(3,40,120)}}
 
                         />
                       </View>
@@ -379,7 +445,7 @@ const Slots=({navigation,route})=>{
                           icon="checkbox-multiple-marked-circle"
                           disabled={isDisabled4}
                           size={35}
-                          onPress={()=>{bookSlot(4,50)}}
+                          onPress={()=>{bookSlot(4,50,150)}}
 
                         />
                       </View>
@@ -403,7 +469,7 @@ const Slots=({navigation,route})=>{
                           icon="checkbox-multiple-marked-circle"
                           disabled={isDisabled5}
                           size={35}
-                          onPress={()=>{bookSlot(5,20)}}
+                          onPress={()=>{bookSlot(5,60,180)}}
 
                         />
                       </View>
@@ -417,11 +483,11 @@ const Slots=({navigation,route})=>{
                </TouchableHighlight>
                <View style={{marginBottom:10,marginTop:10,marginLeft:50,marginRight:50}}>
                <Button title="cancle" color="#00457C"
-               onPress={()=>{CancleBook();  setslotPrice(0); }}/>
+               onPress={()=>{CancleBook(); setslotPrice(0); }}/>
                </View>
                 <View style={{marginLeft:50,marginRight:50}}>
                 <Button title="ok"  color="#00457C"  disabled={disableOk}
-                onPress={()=>{confirmBook();CancleBook()}}
+                onPress={()=>{GetSlots();confirmBook();CancleBook()}}
                 />
                 </View>
            </View>
@@ -448,7 +514,7 @@ const Slots=({navigation,route})=>{
                 <View style={{flexDirection:'row'}}>  
                     <Text style={{fontSize:22,color:"#07243b",fontFamily:'Courgette-Regular'}}>Price: {soltPrice} </Text>
                 <FontAwesome
-                name="money"
+                 name="database"
                  color="gold"
                  size={30}
               /></View>
@@ -456,7 +522,10 @@ const Slots=({navigation,route})=>{
                 </View>
             </TouchableOpacity>
           
-              <ReviewForm />
+              <ReviewForm id={SlotIdTitle} ChId={childId}  Price={soltPrice} Time={formatTime(SelectTime)}
+               Dat={SelectDate} Uemail={UserEmail} duration={LongDuration} 
+               goToPay={GoPayPal} buyPoints={BuyPoints}  goHome={BackHome}
+               />
 
               
                </ScrollView>
@@ -465,17 +534,17 @@ const Slots=({navigation,route})=>{
           
          <View style={styles.car_view}>
          { 
-           slotinfo.map(item=>
-            <View  key={item.id}  style={{ 
+           Leftslotinfo.map((item,index)=>
+            <View  key={item}  style={{ 
                width:45,             
                height:45,
             }}>
             <IconButton 
-               disabled={ !item.isAvaliable}
-               color={item.isAvaliable ?  "#2f5d82" : "#5e0707"}
+               color= {(isColored && (SlotIdTitle==item))?"green":"#2f5d82"}
                icon="slot-machine"
                size={42}
-               onPress={() =>{setPriceModaleOpen(true);setSlotId(item.id)}}
+               disabled={(LeftAvailbe[index]=="false")? true: false}
+               onPress={() =>{setModaleOpen(true);setSlotId(item)}}
 
             />
             </View>
@@ -486,36 +555,39 @@ const Slots=({navigation,route})=>{
          
          <View style={styles.rightCarView}>
          { 
-            rightSlots.map(item=>
-            <View  key={item.id}  style={{
+           Rightslotinfo.map((item,index)=>
+            <View  key={item}  style={{ 
                width:45,             
                height:45,
             }}>
             <IconButton 
-               disabled={ !item.isAvaliable}
-               color={item.isAvaliable ?    "#2f5d82" : "#5e0707"}
-               icon="slot-machine"
+              disabled={(RightAvailbe[index]=="true")? false: true}
+              color= {(isColored && (SlotIdTitle==item))?"green":"#2f5d82"}
+              icon="slot-machine"
                size={42}
-               onPress={() =>{setPriceModaleOpen(true);setSlotId(item.id)}}
+           
+               onPress={() =>{setModaleOpen(true);setSlotId(item)}}
 
             />
             </View>
            )
             }
+            
           </View>
               
           <View style={styles.middle_btn}>
             <Text style={{ transform:[{rotate:"90deg"}],
               paddingTop:250,
-              width:300,//position:'absolute',
-             marginTop:80,}}>_           Center Street         _</Text>
+              width:300,
+             marginTop:80,}}>                     </Text>
          </View>  
         </ ScrollView>
 
       <View style={styles.Footer}>
-        <Text style={styles.text}>Empty: {Empty=(slotinfo.filter(item=>item.isAvaliable).length+rightSlots.filter(item=>item.isAvaliable).length)} </Text>     
         
-        <Text style={styles.text}> Reserve: {Reserve= (slotinfo.length+rightSlots.length)-Empty} </Text> 
+        <Text style={styles.text}>Empty: {Empty=(slotinfo2.filter(item=>(item.isAvaliable=="true")).length+slotinfoR2.filter(item=>(item.isAvaliable=="true")).length)} </Text>     
+        
+        <Text style={styles.text}> Reserve: {Reserve= (Leftslotinfo.length+Rightslotinfo.length)-Empty} </Text> 
       </View>
     </View>
       );

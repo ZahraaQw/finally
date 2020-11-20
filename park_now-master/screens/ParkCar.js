@@ -92,6 +92,7 @@ const ParkCar=({navigation})=>{
      
             return(
           <ScrollView  style={ styles.container }>
+
                  <View style={{flexDirection:'row'}}>
 
                  <Autocomplete
@@ -130,6 +131,10 @@ const ParkCar=({navigation})=>{
                       </View>
                     </View>
                     <View >
+
+                      <View style={styles.titleStl}>
+                        <Text style={{color:"white"}}>Select Date and Strat Time</Text>
+                      </View>
                        <View style={styles.date_time}>
                             <IconButton
                             icon="calendar"
@@ -168,7 +173,7 @@ const ParkCar=({navigation})=>{
                     SelectDest:selectedValue,SelectDate:date,SelectTime:time
               })}}
                        >
-                              <Text> SLOTS </Text>
+                              <Text style={{color:"white",fontWeight:'bold'}}> SLOTS </Text>
                       </TouchableOpacity>
                       <TouchableOpacity style={[styles.top_bttn,{
                         marginLeft:10
@@ -179,7 +184,7 @@ const ParkCar=({navigation})=>{
                         SelectDest:selectedValue,SelectDate:date,SelectTime:time
                   })}}
                      >
-                    <Text>PARKING</Text>
+                    <Text style={{color:"white",fontWeight:"bold"}}>PARKING</Text>
                       </TouchableOpacity>
                        </View>
                  </ScrollView>
@@ -214,7 +219,7 @@ const styles = StyleSheet.create({
       },
 
       date_time:{
-          marginLeft:8,
+          marginLeft:12,
           marginRight:30,
           marginBottom:10,
           marginTop:10,
@@ -245,16 +250,14 @@ const styles = StyleSheet.create({
       btn_park:{
         flexDirection:'row',
         backgroundColor:"#ebf6fa",
-        marginTop:10,
-        paddingVertical:80,
+        paddingVertical:75,
       },
  
       top_bttn:{
-        backgroundColor:"#00457C",
-        opacity:0.4,
+        backgroundColor:"#6084a1",
+        opacity:0.8,
         borderRadius: 3,
         paddingVertical:60,
-        marginTop:5,
         width:130,
         justifyContent:'center',
         alignItems:'center'
@@ -273,6 +276,17 @@ const styles = StyleSheet.create({
         borderBottomWidth:1.4,
        // margin: 2,
       },
+      titleStl:{
+        marginLeft:20,
+        marginTop:50,
+        marginBottom:3,
+        marginRight:40,
+        backgroundColor:"#6084a1",
+        justifyContent:"center",
+        alignItems:"center",
+        height:40,
+       // opacity:0.5
+      }
 
 });
 export  default ParkCar;

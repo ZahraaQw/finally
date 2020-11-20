@@ -18,6 +18,8 @@ const DrawerContent=(props)=>{
      //  let image=props.recivedimage;
 
       const[image,setImage]=useState();
+      const[fromHome,setfromHome]=useState(true);
+
 
 
        const GetInfo = () =>{
@@ -159,7 +161,7 @@ const DrawerContent=(props)=>{
              }
              label="Find My Position"
              labelStyle={styles.lable}
-             onPress={() => {props.navigation.navigate('Find')}}
+             onPress={() => {setfromHome(true);props.navigation.navigate('Find',{HomeSelect:fromHome})}}
              />
          
          </Drawer.Section>
